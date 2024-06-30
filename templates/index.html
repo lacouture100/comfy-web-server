@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Image to painting</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://unpkg.com/jcrop/dist/jcrop.css">
+    <script src="https://unpkg.com/jcrop"></script>
+</head>
+
+<body>
+
+    <script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
+
+
+    <!-- <img src="{{ url_for('static', filename='/images/elf_logo.png') }}" alt="Hero image" class="logoImage">
+        <img src="{{ url_for('static', filename='/images/original-image-mt_3.jpg') }}" alt="Hero image" class="heroImage"> -->
+
+
+
+    <div class="main-container">
+        <section class="top-section">
+
+            <div class="instructions">
+
+                <h1>PERROS SHIRT</h1>
+                <p> Transform your favorite furred (or semi-hairless) companion into a masterpiece through our painting
+                    conversion tool. First, tell us if your pet is a dog or a cat, then what kind of breed it is. This
+                    will help with the transformation process. </p>
+                <p> Then upload an image of your dog or cat, and hit transform.</p>
+                <p>Replace background with solid color</p>
+
+                <div class="dropdown-container">
+                    <select id="color-dropdown">
+                        <option value="" disabled selected>DON'T CHANGE</option>
+                        <option value="grey" data-img="{{ url_for('static', filename='/bg_colors/grey.png') }}">Grey</option>
+                        <option value="blue" data-img="{{ url_for('static', filename='/bg_colors/blue.png') }}">Blue</option>
+                        <option value="yellow" data-img="{{ url_for('static', filename='/bg_colors/yellow.png') }}">Yellow</option>
+                    </select>
+                    <div id="color-preview" class="color-preview">
+                        <img src="" alt="Color Preview" id="preview-img">
+                    </div>
+                </div>
+                <button onclick="processImage()">TRANSFORM</button>
+                <div id="loading" class="loading" hidden>
+                    
+                </div>
+
+            </div>
+
+
+            <div id="image-preview">
+                <div class="image-preview-instructions">
+                    <img src="{{ url_for('static', filename='/images/upload_image.png') }}" alt="Upload image"
+                        class="upload-image">
+                    <p>Drag and drop photo here</p>
+                    <p>or</p>
+                    <input class="file-upload" type="file" id="file-upload" accept="image/*"
+                        placeholder="Choose an image">
+                    <label for="file-upload" class="custom-file-upload">
+                        SELECT FROM YOUR COMPUTER
+                    </label>
+                    <p class="resolution">Minimum resolution: 800px x 800px</p>
+
+                </div>
+            </div>
+
+
+        </section>
+
+        <div class="separator"></div>
+
+        <section class="bottom-section">
+
+            <div class="bottom-action-area">
+                <button onclick="back()">⇦ BACK</button>
+
+                <h1>CUSTOMIZE</h1>
+                <p>Choose the framing and adjust the brightness and contrast of your image.</p>
+                <div class="framing-container">
+                    <div class="framing-option">
+                        <img src="{{ url_for('static', filename='/images/square.png') }}" alt="Upload image"
+                        class="framing-image">
+                        <input type="radio" id="square" name="framing" value="square" checked>
+                        <label for="square">Square</label>
+                    </div>
+                    <div class="framing-option">
+                        <img src="{{ url_for('static', filename='/images/landscape.png') }}" alt="Upload image"
+                        class="framing-image">
+                        <input type="radio" id="landscape" name="framing" value="landscape">
+                        <label for="landscape">Landscape</label>
+                    </div>
+                    <div class="framing-option">
+                        <img src="{{ url_for('static', filename='/images/portrait.png') }}" alt="Upload image"
+                        class="framing-image">
+                        <input type="radio" id="portrait" name="framing" value="portrait">
+                        <label for="portrait">Portrait</label>
+                    </div>
+                </div>
+                <p>Brightness</p>
+                <div id="brightness-slider-container" class="slider-container">
+
+                    <input type="range"min="0" max="200" value="150" class="slider" id="brightness-slider">
+                </div>
+                <p>Contrast</p>
+                <div id="contrast-slider-container" class="slider-container">
+                    <input type="range"  min="50" max="200" value="100" class="slider" id="contrast-slider">
+                </div>
+                <button onclick="upscaleImage()">MAKE IT REAL</button>
+
+            </div>
+            <div id="image-container">
+            </div>
+
+        </section>
+
+    </div>
+
+
+</body>
+
+</html>

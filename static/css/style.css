@@ -1,0 +1,370 @@
+body {
+    font-family: "Open Sans", sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f5f5f5;
+}
+
+h1 {
+    color: #333;
+    margin-block-start: 0.3em;
+    margin-block-end: 0.3em;
+    font-size: 40pt;
+}
+p {
+    color: #333;
+    margin-block-start: 0.5em;
+    margin-block-end: 0.5em;
+    font-size: 12pt;
+    text-align:left
+}
+
+
+button {
+    background-color: black;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 10px 0;
+    cursor: pointer;
+    transition: 0.3s;
+    max-width: 50%;
+
+}
+
+.button:hover {
+    background-color: #45a049;
+}
+
+.custom-file-upload {
+    background-color: black;
+    color: white;
+    border: none;
+    padding: 10px 14px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 5px;
+    cursor: pointer;
+    transition: 0.3s;
+    width: 90%;
+}
+
+input[type="file"] {
+    display: none;
+}
+
+.main-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height:100vh;
+    align-items: center;
+    justify-content: space-evenly;
+}
+
+
+.top-section {
+    padding: 20px;
+    display: flex;
+    width: 80%;
+    height:50%;
+    min-height: 500px;
+    align-items: center;
+    justify-content: space-evenly;
+    align-items: flex-start;
+}
+.bottom-section {
+    padding: 20px;
+    display: flex;
+    flex-direction: row;
+    width: 80%;
+    height:50%;
+    min-height: 500px;
+    align-items: center;
+    justify-content: space-evenly;
+    align-items: flex-start;
+}
+
+.separator{
+    width: 80%;
+    min-height: 3px;
+    background-color: #ccc;
+    margin-top: 20px;
+    margin-bottom: 20px;
+
+}
+
+#preview {
+    margin-top: 20px;
+    height: auto;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+#image-preview {
+    margin: 20px;
+    height: 80%;
+    width: 50%;
+    min-height: 300px;
+    min-width: 300px;
+    max-height: 700px;
+    max-width: 700px;
+    border: black 2px solid;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+}
+
+#image-preview:hover {
+    border-color: red;
+}
+
+#image-preview img:not(.upload-image) {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+.image-preview-instructions {
+    margin: 20px;
+    height: 50%;
+    width: 60%;
+    display: flex;
+    flex-direction: column;
+    
+    align-items: center;
+    justify-content: center;
+}
+
+#processed-image{
+    width: 100%;
+    margin: auto;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+
+#image-container {
+    margin: 20px;
+    height: 80%;
+    width: 50%;
+    min-height: 300px;
+    min-width: 300px;
+    max-height: 700px;
+    max-width: 700px;
+    border: black 2px solid;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.resolution{
+    font-size: 12px;
+    height: 14px;
+}
+
+
+.upload-image {
+    width: 80px;
+    height: auto;
+    z-index: 1;
+    
+}
+.framing-image {
+    width: 60%;
+    height: auto;
+    z-index: 1;
+
+}
+
+.instructions {
+    display: flex;
+    flex-direction: column;
+    text-align: start;
+    width: 35%;
+    gap:0.2em;
+}
+
+.loading {
+    display: none;
+    /* Hidden by default */
+    position: fixed;
+    /* or absolute */
+    z-index: 999;
+    top: 50%;
+    left: 50%;
+    border: black solid 2px;
+    color: aliceblue;
+    font-size: medium;
+    transform: translate(-50%, -50%);
+    width: 100px;
+    aspect-ratio: 1;
+    background:
+        linear-gradient(45deg, #00AAFF 50%, #0000 0),
+        linear-gradient(-45deg, #F1BBBB 50%, #0000 0),
+        linear-gradient(45deg, #0000 50%, #AA00FF 0),
+        linear-gradient(-45deg, #0000 50%, #FF00AA 0),
+        #00AAFF;
+    background-size: 200% 200%;
+    background-repeat: no-repeat;
+    animation: l3 2.5s infinite;
+    /* More styling here */
+}
+
+.image-buttons {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    width: 40%;
+}
+
+.action-area {
+    display: flex;
+    margin-top: 50px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    width: 50%;
+}
+
+.bottom-action-area {
+    display: flex;
+    
+    flex-direction: column;
+    align-items: start;
+    justify-content: center;
+    flex-wrap: wrap;
+    width: 35%;
+    gap:0.2em;
+}
+
+.dropdown-container {
+    display: flex;
+    align-items: center;
+}
+
+/* Style the color preview div */
+.color-preview {
+    width: 40px;
+    height: 40px;
+    margin-left: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+#color-dropdown{
+    width: 60%;
+    padding: 10px ;
+    margin: 10px 0;
+
+    border: 1px solid black;
+}
+
+.color-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.slider-container{
+    width: 60%;
+    padding:  0px 10px ;
+    margin:  10px 0;
+    border: solid black 2px;
+}
+
+.framing-container{
+    display: flex;
+    flex-direction: row;
+    align-items: end;
+    justify-content: start;
+    flex-wrap: wrap;
+    width: 100%;
+}
+.framing-option{
+    width: 20%;
+    padding: 5px ;
+    margin: 0px;
+    gap:5px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.slider {
+    -webkit-appearance: none;
+    width: 80%;
+
+    margin: 20px;
+    height: 2px;
+    background: black;
+    outline: none;
+    -webkit-transition: .2s;
+    transition: opacity .2s;
+  }
+  
+  .slider:hover {
+    opacity: 1;
+  }
+  
+  .slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 23px;
+    height: 24px;
+    border: 0;
+    background-color: black;
+    cursor: pointer;
+    border-radius: 50%;
+  }
+  
+  .slider::-moz-range-thumb {
+    width: 23px;
+    height: 24px;
+    border: 0;
+    background-color: black;
+    cursor: pointer;
+    border-radius: 50%;
+  }
+@keyframes l3 {
+    0% {
+        background-position: 100% 0, 0 0, 0 100%, 100% 100%
+    }
+
+    15%,
+    25% {
+        background-position: 100% 0, 0 0, 0 100%, 0 0
+    }
+
+    40%,
+    50% {
+        background-position: 100% 0, 0 0, 100% 0, 0 0
+    }
+
+    65%,
+    75% {
+        background-position: 100% 0, 100% 100%, 100% 0, 0 0
+    }
+
+    90%,
+    100% {
+        background-position: 0 100%, 100% 100%, 100% 0, 0 0
+    }
+}
+
+/* When the loading element is not hidden, display it */
+.loading:not([hidden]) {
+    display: block;
+}
