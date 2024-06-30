@@ -1,14 +1,14 @@
 {
   "3": {
     "inputs": {
-      "seed": 909501897351803,
+      "seed": 702187316329628,
       "steps": 20,
       "cfg": 8,
       "sampler_name": "euler",
       "scheduler": "simple",
       "denoise": 0.18,
       "model": [
-        "4",
+        "17",
         0
       ],
       "positive": [
@@ -42,7 +42,7 @@
     "inputs": {
       "text": "impressionist oil painting",
       "clip": [
-        "4",
+        "17",
         1
       ]
     },
@@ -55,7 +55,7 @@
     "inputs": {
       "text": "text, watermark, signatures",
       "clip": [
-        "4",
+        "17",
         1
       ]
     },
@@ -87,7 +87,7 @@
     },
     "class_type": "LoadImage",
     "_meta": {
-      "title": "Load Image"
+      "title": "Load Input Image"
     }
   },
   "11": {
@@ -104,6 +104,25 @@
     "class_type": "VAEEncode",
     "_meta": {
       "title": "VAE Encode"
+    }
+  },
+  "17": {
+    "inputs": {
+      "lora_name": "oil_painting.safetensors",
+      "strength_model": 0.1,
+      "strength_clip": 1,
+      "model": [
+        "4",
+        0
+      ],
+      "clip": [
+        "4",
+        1
+      ]
+    },
+    "class_type": "LoraLoader",
+    "_meta": {
+      "title": "Load LoRA"
     }
   },
   "36": {
@@ -128,7 +147,7 @@
     },
     "class_type": "Image Save",
     "_meta": {
-      "title": "Image Save"
+      "title": "Save Output Image"
     }
   },
   "37": {
@@ -204,7 +223,7 @@
     },
     "class_type": "LoadImage",
     "_meta": {
-      "title": "Load Image"
+      "title": "Load Background Image"
     }
   },
   "60": {
