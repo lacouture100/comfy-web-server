@@ -1,69 +1,134 @@
-# This script is released under the MIT License
-# For full license text, see https://opensource.org/licenses/MIT
-
 import json
 from urllib import request, parse
 import random
+import os 
+import io
+from sys import stdout
+import uuid
+import websocket
+import urllib
 
-# ======================================================================
-# This function sends a prompt workflow to the specified URL 
-# (http://127.0.0.1:8188/prompt) and queues it on the ComfyUI server
-# running at that address.
-def queue_prompt(prompt_workflow):
-    p = {"prompt": prompt_workflow}
+abs_path = os.path.abspath(os.path.dirname(__file__))
+seed = random.randint(1, 184409551614)
+
+image_output_path = os.path.abspath(os.path.dirname(__file__))
+
+# Load the JSON file
+with open('workflow_api.json', encoding="utf8") as file:
+    data = json.load(file)  # data is now a Python dictionary
+
+# Chagne the seed in each generation
+if "3" in data and "inputs" in data["3"]:
+  data["3"]["inputs"]["seed"] = seed
+
+if "10" in data and "inputs" in data["10"]:
+  input_image_node = data["10"]
+
+if "59" in data and "inputs" in data["59"]:
+  background_image_node = data["59"]
+
+if "36" in data and "inputs" in data["36"]:
+  output_image_node = data["36"]
+  
+
+# Modify the desired properties
+# Assuming you want to change the image file name
+if "10" in data  and "inputs" in data["10"]:
+    input_image_node["inputs"]["image"] = os.path.abspath("input_image_2.png")
+    output_image_node["inputs"]["output_path"] = os.path.abspath(os.path.dirname(__file__))
+
+
+# Convert the modified JSON object (dictionary) to a JSON-formatted string
+json_string = json.dumps(data, indent=2)
+
+prompt_text = json_string
+
+
+server_address = "127.0.0.1:8188"
+client_id = str(uuid.uuid4())
+
+def queue_prompt(prompt):
+    # Create a dictionary with the provided prompt and client_id (global).
+    p = {"prompt": prompt, "client_id": client_id}
+    
+    # Convert the dictionary to a JSON string and then encode it to bytes.
+    # This encoding is necessary as the data needs to be sent in a byte format over HTTP.
     data = json.dumps(p).encode('utf-8')
-    req =  request.Request("http://127.0.0.1:8188/prompt", data=data)
-    request.urlopen(req)    
-# ======================================================================
+    req =  urllib.request.Request("http://{}/prompt".format(server_address), data=data)
+    return json.loads(urllib.request.urlopen(req).read())
 
-# read workflow api data from file and convert it into dictionary 
-# assign to var prompt_workflow
-prompt_workflow = json.load(open('workflow_api.json'))
+def get_image(filename, subfolder, folder_type):
+    data = {"filename": filename, "subfolder": subfolder, "type": folder_type}
+    print(data)
+    url_values = urllib.parse.urlencode(data)
+    image_url = image_output_path + "\\" + filename
+    print(image_url)
+    return image_url
+    # with urllib.request.urlopen("http://{}/view?{}".format(image_output_path, url_values)) as response:
+    #     return response.read()
 
-# create a list of prompts
-prompt_list = []
-prompt_list.append("photo of a man sitting in a cafe")
-prompt_list.append("photo of a woman standing in the middle of a busy street")
-prompt_list.append("drawing of a cat sitting in a tree")
-prompt_list.append("beautiful scenery nature glass bottle landscape, purple galaxy bottle")
+def get_history(prompt_id):
+      # Construct the URL for the request.
+    # This URL is formatted to access the 'history' endpoint on the server,
+    # includes the 'server_address' and 'prompt_id' as part of the URL path.
+    with urllib.request.urlopen("http://{}/history/{}".format(server_address, prompt_id)) as response:
+        return json.loads(response.read())
 
-# give some easy-to-remember names to the nodes
-chkpoint_loader_node = prompt_workflow["4"]
-prompt_pos_node = prompt_workflow["6"]
-empty_latent_img_node = prompt_workflow["5"]
-ksampler_node = prompt_workflow["3"]
-save_image_node = prompt_workflow["9"]
+def get_images(ws, prompt):
+    prompt_id = queue_prompt(prompt)['prompt_id']
+    output_images = {}
+    while True:
+        out = ws.recv()
+        if isinstance(out, str):
+            message = json.loads(out)
+            if message['type'] == 'executing':
+                data = message['data']
+                if data['node'] is None and data['prompt_id'] == prompt_id:
+                    break #Execution is done
+            elif message['type'] == 'progress':
+                data = message['data']
+                print_progress(data['value'], data['max'])
 
-# load the checkpoint that we want. 
-chkpoint_loader_node["inputs"]["ckpt_name"] = "SD1-5/sd_v1-5_vae.ckpt"
+                print(f"Progress: Step {data['value']} of {data['max']})")
+                # When progress is complete
+                if data['value'] == data['max']:
+                    print("\nPrompt complete!")
+        else:
+            continue #previews are binary data
 
-# set image dimensions and batch size in EmptyLatentImage node
-empty_latent_img_node["inputs"]["width"] = 512
-empty_latent_img_node["inputs"]["height"] = 640
-# each prompt will produce a batch of 4 images
-empty_latent_img_node["inputs"]["batch_size"] = 4
+    history = get_history(prompt_id)[prompt_id]
+    for o in history['outputs']:
+        for node_id in history['outputs']:
+            node_output = history['outputs'][node_id]
+            if 'images' in node_output:
+                images_output = []
+                for image in node_output['images']:
+                    print("image" + str(image))
+                    image_data = get_image(image['filename'], image['subfolder'], image['type'])
+                    images_output.append(image_data)
+            output_images[node_id] = images_output
 
-# for every prompt in prompt_list...
-for index, prompt in enumerate(prompt_list):
+    return output_images
 
-  # set the text prompt for positive CLIPTextEncode node
-  prompt_pos_node["inputs"]["text"] = prompt
+def print_progress(value, max_value):
+    bar_length = 50  # Length of the progress bar
+    percent = float(value) / max_value
+    arrow = '-' * int(round(percent * bar_length) - 1) + '>'
+    spaces = ' ' * (bar_length - len(arrow))
 
-  # set a random seed in KSampler node 
-  ksampler_node["inputs"]["seed"] = random.randint(1, 18446744073709551614)
+    # Update the progress bar in place
+    stdout.write("\rProgress: [{0}] {1}%".format(arrow + spaces, int(round(percent * 100))))
+    stdout.flush()
 
-  # if it is the last prompt
-  if index == 3:
-    # set latent image height to 768
-    empty_latent_img_node["inputs"]["height"] = 768
+# create new websocket object
+ws = websocket.WebSocket()  
+# connect to the websocket server
+ws.connect("ws://{}/ws?clientId={}".format(server_address, client_id))
+print(f"client ID = {client_id}")
 
-  # set filename prefix to be the same as prompt
-  # (truncate to first 100 chars if necessary)
-  fileprefix = prompt
-  if len(fileprefix) > 100:
-    fileprefix = fileprefix[:100]
+prompt = json.loads(prompt_text)
 
-  save_image_node["inputs"]["filename_prefix"] = fileprefix
+# get images, passing the ws and prompt_workflow
+# returns a dictionary of output_node_id (key) and list of images (value)
+images = get_images(ws, prompt)
 
-  # everything set, add entire workflow to queue.
-  queue_prompt(prompt_workflow)
