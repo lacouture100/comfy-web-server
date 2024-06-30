@@ -12,8 +12,7 @@ seed = random.randint(1, 184409551614)
 workflow_api_json = "workflow_api.json"
 image_output_path = os.path.abspath(os.path.dirname(__file__))
 input_image_path = os.path.abspath("input_image_2.png")
-background_image_path = os.path.abspath("bg_blue.png")
-is_single_image = False
+bg_images_path = os.path.abspath(os.path.dirname(__file__))
 
 def process_prompt(workflow_api_json: str, seed: str, input_image_path: str, background_image_path: str, output_image_path: str) -> dict:
     """
@@ -230,13 +229,14 @@ ws = websocket.WebSocket()
 ws.connect("ws://{}/ws?clientId={}".format(server_address, client_id))
 print(f"client ID = {client_id}")
 
+def process_image_with_comfy(input_image_path: str, bg_color: str, output_directory: str) -> str:
+    background_image_path = "{}/{}.png".format(bg_images_path, bg_color)
+    prompt_text = process_prompt(workflow_api_json, seed, input_image_path, background_image_path, image_output_path)
+    prompt = json.loads(prompt_text)
+    image_data = get_images(ws, prompt)
+    processed_image_url = retrieve_processed_image_url(image_data)
+    print(processed_image_url )
 
-prompt_text = process_prompt(workflow_api_json, seed, input_image_path, background_image_path, image_output_path)
-prompt = json.loads(prompt_text)
 
-# get images, passing the ws and prompt_workflow
-# returns a dictionary of output_node_id (key) and list of images (value)
-image_data = get_images(ws, prompt)
-processed_image_url = retrieve_processed_image_url(image_data)
-print(processed_image_url )
+process_image_with_comfy(input_image_path, image_output_path, "blue")
 
