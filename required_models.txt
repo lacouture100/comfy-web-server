@@ -1,0 +1,1 @@
+Oil Painting model based on Stable Diffusion 1.5: https://civitai.com/models/20184/oil-painting

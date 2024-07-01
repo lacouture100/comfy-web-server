@@ -11,3 +11,10 @@ Pillow
 scipy
 tqdm
 black
+websocket
+Flask
+python-opencv
+python-dotenv
+websockets-client
+requests
+

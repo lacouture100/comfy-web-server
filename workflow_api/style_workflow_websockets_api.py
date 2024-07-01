@@ -7,12 +7,21 @@ from sys import stdout
 import uuid
 import websocket
 import urllib
+import base64
+from flask import send_file
+
+
+# Get the absolute path of the parent directory
+parent_dir = os.path.dirname(os.getcwd())
 
 seed = random.randint(1, 184409551614)
-workflow_api_json = "workflow_api.json"
-image_output_path = os.path.abspath(os.path.dirname(__file__))
+workflow_api_json = "{}{}".format(os.path.abspath(os.path.dirname(__file__)), "/workflow_api.json")
+image_output_path = os.path.join(parent_dir, "static", "output")
 input_image_path = os.path.abspath("input_image_2.png")
 bg_images_path = os.path.abspath(os.path.dirname(__file__))
+
+server_address = "127.0.0.1:8188"
+client_id = str(uuid.uuid4())
 
 def process_prompt(workflow_api_json: str, seed: str, input_image_path: str, background_image_path: str, output_image_path: str) -> dict:
     """
@@ -66,10 +75,6 @@ def process_prompt(workflow_api_json: str, seed: str, input_image_path: str, bac
     prompt_text = json_string
     return prompt_text
 
-
-server_address = "127.0.0.1:8188"
-client_id = str(uuid.uuid4())
-
 def queue_prompt(prompt) :
     """
     Send a prompt to the server to be processed.
@@ -122,8 +127,6 @@ def get_history(prompt_id):
         dict: A dictionary containing every the execution of the prompt
     """
     # Send a GET request to the server to retrieve the history of the prompt.
-    # includes the 'server_address' and 'prompt_id' as part of the URL path.
-    print("http://{}/history/{}".format(server_address, prompt_id))
     with urllib.request.urlopen("http://{}/history/{}".format(server_address, prompt_id)) as response:
         return json.loads(response.read())
 
@@ -206,37 +209,35 @@ def print_progress(value, max_value):
     stdout.write("\rProgress: [{0}] {1}%".format(arrow + spaces, int(round(percent * 100))))
     stdout.flush()
 
-def retrieve_processed_image_url(images_dict: dict) -> str:
-    """
-    Retrieve the URL of the processed image from the dictionary of images.
-    
-    Args:
-        images_dict: A dictionary containing the output_node_id and list of images.
-        
-    Returns:
-        str: The URL of the processed image.
-    """
-    # Retrieve the first image from the dictionary
-
-    image_url = images_dict[list(images_dict.keys())[0]][0]
-    return image_url
-
-
 # create new websocket object
 ws = websocket.WebSocket()  
 
-# connect to the websocket server
-ws.connect("ws://{}/ws?clientId={}".format(server_address, client_id))
-print(f"client ID = {client_id}")
 
-def process_image_with_comfy(input_image_path: str, bg_color: str, output_directory: str) -> str:
-    background_image_path = "{}/{}.png".format(bg_images_path, bg_color)
+def process_image_with_comfy(input_image_path: str, output_directory: str, bg_color: str, ) -> str:
+    """
+    Process the input image using the Comfy style workflow API.
+    
+    Args:
+        input_image_path (str): The path to the input image.
+        output_directory (str): The directory to save the processed image.
+        bg_color (str): The background color for the processed image.
+    
+    Returns:
+        str: The path to the processed image.
+    """
+    
+    ws.connect("ws://{}/ws?clientId={}".format(server_address, client_id))
+    background_image_path = "{}\{}.png".format(bg_images_path, bg_color)
     prompt_text = process_prompt(workflow_api_json, seed, input_image_path, background_image_path, image_output_path)
     prompt = json.loads(prompt_text)
     image_data = get_images(ws, prompt)
-    processed_image_url = retrieve_processed_image_url(image_data)
-    print(processed_image_url )
+    
+    
+    processed_image_path = image_data[list(image_data.keys())[0]][0]
+    print("style_workflow_web_scokets : " + processed_image_path)
+    ws.close()
+    return processed_image_path
 
 
-process_image_with_comfy(input_image_path, image_output_path, "blue")
+#process_image_with_comfy(input_image_path, image_output_path, "blue")
 

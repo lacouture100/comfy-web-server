@@ -174,3 +174,10 @@ cython_debug/
 .ogv
 .ogm
 .oga
+
+# old files
+_old/
+
+# log files
+
+*.log
