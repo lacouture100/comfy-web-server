@@ -15,7 +15,7 @@ from flask import send_file
 parent_dir = os.path.dirname(os.getcwd())
 
 seed = random.randint(1, 184409551614)
-workflow_api_json = "{}{}".format(os.path.abspath(os.path.dirname(__file__)), "/workflow_api.json")
+workflow_api_json = "{}{}".format(os.path.abspath(os.path.dirname(__file__)), "/style_workflow_api.json")
 image_output_path = os.path.join(parent_dir, "static", "output")
 input_image_path = os.path.abspath("input_image_2.png")
 bg_images_path = os.path.abspath(os.path.dirname(__file__))

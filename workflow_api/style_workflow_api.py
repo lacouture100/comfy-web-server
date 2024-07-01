@@ -7,7 +7,7 @@ abs_path = os.path.abspath(os.path.dirname(__file__))
 seed = random.randint(1, 184409551614)
 
 # Load the JSON file
-with open('workflow_api.json', encoding="utf8") as file:
+with open('style_workflow_api.json', encoding="utf8") as file:
     data = json.load(file)  # data is now a Python dictionary
 
 # Chagne the seed in each generation
