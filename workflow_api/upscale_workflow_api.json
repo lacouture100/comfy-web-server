@@ -1,0 +1,95 @@
+{
+  "12": {
+    "inputs": {
+      "model_name": "4xUltrasharp_4xUltrasharpV10.pth"
+    },
+    "class_type": "UpscaleModelLoader",
+    "_meta": {
+      "title": "Load Upscale Model"
+    }
+  },
+  "13": {
+    "inputs": {
+      "image": "generated_with_bg_v2.png",
+      "upload": "image"
+    },
+    "class_type": "LoadImage",
+    "_meta": {
+      "title": "Load Input Image"
+    }
+  },
+  "29": {
+    "inputs": {
+      "upscale_model": [
+        "12",
+        0
+      ],
+      "image": [
+        "13",
+        0
+      ]
+    },
+    "class_type": "ImageUpscaleWithModel",
+    "_meta": {
+      "title": "Upscale Image (using Model)"
+    }
+  },
+  "34": {
+    "inputs": {
+      "number_type": "integer",
+      "number": 3300
+    },
+    "class_type": "Constant Number",
+    "_meta": {
+      "title": "Largest Side Length (px)"
+    }
+  },
+  "36": {
+    "inputs": {
+      "action": "resize only",
+      "smaller_side": 0,
+      "larger_side": [
+        "34",
+        2
+      ],
+      "scale_factor": 0,
+      "resize_mode": "any",
+      "side_ratio": "4:3",
+      "crop_pad_position": 0.5,
+      "pad_feathering": 20,
+      "pixels": [
+        "29",
+        0
+      ]
+    },
+    "class_type": "ImageResize",
+    "_meta": {
+      "title": "Image Resize"
+    }
+  },
+  "38": {
+    "inputs": {
+      "output_path": "[time(%Y-%m-%d)]",
+      "filename_prefix": "ComfyUI",
+      "filename_delimiter": "_",
+      "filename_number_padding": 4,
+      "filename_number_start": "false",
+      "extension": "png",
+      "quality": 100,
+      "lossless_webp": "false",
+      "overwrite_mode": "false",
+      "show_history": "false",
+      "show_history_by_prefix": "true",
+      "embed_workflow": "true",
+      "show_previews": "true",
+      "images": [
+        "36",
+        0
+      ]
+    },
+    "class_type": "Image Save",
+    "_meta": {
+      "title": "Save Output Image"
+    }
+  }
+}

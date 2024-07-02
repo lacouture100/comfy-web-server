@@ -1,0 +1,11 @@
+style_workflow_api:
+  server_address: "127.0.0.1:8188"
+  workflow_api_json: "/absolute/path/to/style_workflow_api.json"
+  image_output_path: "/absolute/path/to/static/output"
+  bg_images_path: "/absolute/path/to/static/bg_colors"
+
+upscale_workflow_api:
+  server_address: "127.0.0.1:8188"  # Example random value
+  workflow_api_json: "/absolute/path/to/style_workflow_api.json"
+  image_output_path: "/absolute/path/to/static/output"
+  bg_images_path: "/absolute/path/to/static/bg_colors"
