@@ -1,16 +1,16 @@
 from flask import Flask,send_file, render_template, request, Flask, send_from_directory, abort,jsonify
 from PIL import Image
 import os
-from workflow_api import style_workflow_websockets_api
+from workflow_api import style_workflow_api, upscale_workflow_api
 #from workflow_api import upscale_workflow_api
 import logging
 from PIL import ImageEnhance, Image
 from flask_cors import CORS
+import tempfile
+import datetime
 
 
 # Define the paths for the input and output images
-INPUT_IMAGE_PATH = 'static/input_image.png'
-PROCESSED_IMAGE_PATH = 'static/output'
 ADJUSTED_IMAGE_PATH = 'static/output/adjusted_image.png'
 DOWNLOAD_IMAGE_PATH = 'static/output/download_image.png'
 UPSCALED_IMAGE_PATH = 'static/output/'
@@ -59,19 +59,29 @@ def process():
     if not background_color:
         return "No background color provided", 400
     
-    input_image_path = os.path.abspath(INPUT_IMAGE_PATH)
-    processed_image_path = os.path.abspath(PROCESSED_IMAGE_PATH)
+    # Create a temporary file for the input image
+    with tempfile.NamedTemporaryFile(delete=False) as temp_input_file:
+        image.save(temp_input_file.name)
+        input_image_path = temp_input_file.name
+
+    # Create a temporary file for the processed image
+    with tempfile.NamedTemporaryFile(delete=False) as temp_output_file:
+        processed_image_path = temp_output_file.name
 
     # Save the image to the input image path
-    image.save(os.path.abspath(INPUT_IMAGE_PATH))
+    #image.save(os.path.abspath(INPUT_IMAGE_PATH))
 
     logging.info("Processing the image...")
+    
+    image_name = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
 
     # Process the image and save the processed image
-    processed_image_result_path  = style_workflow_websockets_api.process_image_with_comfy(
-        input_image_path, processed_image_path, background_color
+    processed_image_result_path  = style_workflow_api.process_image_with_comfy(
+        input_image_path, processed_image_path, image_name, background_color
     )
     
+    logging.info("Image processed...")
+
     # Return a JSON response with the Base64-encoded image
     return send_file(processed_image_result_path , mimetype='image/png')
 
