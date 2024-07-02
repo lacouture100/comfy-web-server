@@ -16,12 +16,16 @@ parent_dir = os.path.dirname(os.getcwd())
 
 seed = random.randint(1, 184409551614)
 workflow_api_json = "{}{}".format(os.path.abspath(os.path.dirname(__file__)), "/upscale_workflow_api.json")
-image_output_path = os.path.join(parent_dir, "static", "output")
+output_image_path = os.path.join(parent_dir, "static", "output")
 
 server_address = "127.0.0.1:8188"
 client_id = str(uuid.uuid4())
 
-def process_prompt(workflow_api_json: str, input_image_path: str,  output_image_path: str, largest_side_length: int) -> dict:
+def process_prompt(workflow_api_json: str, 
+                   input_image_path: str,  
+                   output_image_path: str,
+                   output_image_name:str, 
+                   largest_side_length: int) -> dict:
     """
     Process the given prompt path and replace the variables in the JSON file.
     
@@ -51,6 +55,7 @@ def process_prompt(workflow_api_json: str, input_image_path: str,  output_image_
 
     input_image_node["inputs"]["image"] = input_image_path
     output_image_node["inputs"]["output_path"] = output_image_path
+    output_image_node["inputs"]["filename_prefix"] = output_image_name
     resize_image_node["inputs"]["number"] = 3500
 
     # Convert the modified JSON object (dictionary) to a JSON-formatted string
@@ -95,7 +100,7 @@ def get_image(filename, subfolder, folder_type) :
     data = {"filename": filename, "subfolder": subfolder, "type": folder_type}
     print(data)
     url_values = urllib.parse.urlencode(data)
-    image_url = "{}\\{}".format(image_output_path, filename)
+    image_url = "{}\\{}".format(output_image_path, filename)
     print(image_url)
     return image_url
 
@@ -196,7 +201,10 @@ def print_progress(value, max_value):
 ws = websocket.WebSocket()  
 
 
-def process_image_with_comfy(input_image_path: str, output_directory: str, largest_side_length: int) -> str:
+def process_image_with_comfy(input_image_path: str, 
+                             output_image_path:str,
+                             output_image_name:str, 
+                             largest_side_length: int) -> str:
     """
     Process the input image using the Comfy style workflow API.
     
@@ -210,7 +218,12 @@ def process_image_with_comfy(input_image_path: str, output_directory: str, large
     """
     
     ws.connect("ws://{}/ws?clientId={}".format(server_address, client_id))
-    prompt_text = process_prompt(workflow_api_json, input_image_path, image_output_path, largest_side_length)
+    prompt_text = process_prompt(
+        workflow_api_json, 
+        input_image_path, 
+        output_image_path, 
+        output_image_name,
+        largest_side_length)
     prompt = json.loads(prompt_text)
     image_data = get_images(ws, prompt)
     
@@ -221,5 +234,5 @@ def process_image_with_comfy(input_image_path: str, output_directory: str, large
     return processed_image_path
 
 
-#process_image_with_comfy(input_image_path, image_output_path, "blue")
+#process_image_with_comfy(input_image_path, output_image_path, "blue")
 

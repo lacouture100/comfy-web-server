@@ -128,7 +128,7 @@
   "36": {
     "inputs": {
       "output_path": "[time(%Y-%m-%d)]",
-      "filename_prefix": "ComfyUI",
+      "filename_prefix": "[time(%Y-%m-%d)]",
       "filename_delimiter": "_",
       "filename_number_padding": 4,
       "filename_number_start": "false",
