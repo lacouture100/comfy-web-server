@@ -22,7 +22,7 @@ sys.path.append(parent_dir)
 
 from workflow_api import style_workflow_api
 from workflow_api import upscale_workflow_api
-from workflow_api import apply_image_adjustments
+from utils import image_utils
 
 
 flask_app_path = os.path.join(parent_dir, 'launch_comfyui_web_server.py')
@@ -56,14 +56,14 @@ class TestImageProcessing(unittest.TestCase):
         image_path = style_workflow_api.process_image_with_comfy(self.input_image, self.output_directory, self.output_image_name, self.bg_color)
         self.assertTrue(os.path.exists(image_path))
 
-    # def test_upscale_image(self):
-    #     image_path = upscale_workflow_api.process_image_with_comfy(self.input_image, self.output_directory, self.output_image_name, 3000)
-    #     self.assertTrue(os.path.exists(image_path))
+    def test_upscale_image(self):
+        image_path = upscale_workflow_api.process_image_with_comfy(self.input_image, self.output_directory, self.output_image_name, 3000)
+        self.assertTrue(os.path.exists(image_path))
 
     def test_adjust_image(self):
         img = Image.open(self.input_image)
-        img_brightness = apply_image_adjustments.adjust_brightness(img, self.brightness)
-        img_contrast = apply_image_adjustments.adjust_contrast(img, self.contrast)
+        img_brightness = image_utils.adjust_brightness(img, self.brightness)
+        img_contrast = image_utils.adjust_contrast(img, self.contrast)
         
         # Save the adjusted image to verify it works
         adjusted_image_path = os.path.join(self.output_directory, 'adjusted_image.png')
@@ -77,6 +77,7 @@ class TestImageProcessing(unittest.TestCase):
 class TestFlaskApp(unittest.TestCase):
     def setUp(self):
         self.input_image = os.path.abspath('test_input_image.png')
+        self.output_directory = os.path.join(parent_dir, "static", "output")
 
     @classmethod
     def setUpClass(cls):
@@ -84,7 +85,12 @@ class TestFlaskApp(unittest.TestCase):
         cls.client = app.test_client()
         cls.client.testing = True
 
-
+    def tearDown(self):
+        # Clean up created files
+        for f in os.listdir(self.output_directory):
+            os.remove(os.path.join(self.output_directory, f))
+            return
+        
     def test_process(self):
         # Test the /process route with a POST request using test_input_image.png
         with open(self.input_image, 'rb') as image_file:
@@ -98,6 +104,29 @@ class TestFlaskApp(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.mimetype, 'image/png')
 
+    def test_upscale(self):
+            # Test the /upscale route with a POST request using test_input_image.png
+            with open(self.input_image, 'rb') as image_file:
+                test_image = BytesIO(image_file.read())
+
+            response = self.client.post('/upscale', content_type='multipart/form-data', data={
+                'image': (test_image, 'test_input_image.png'),
+                'brightness': '1.0',
+                'contrast': '1.0',
+                'format': '1000',
+                'crop_width': '240',
+                'crop_height': '330',
+                'crop_x': '10',
+                'crop_y': '10'
+            })
+
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.mimetype, 'application/json')
+
+            # Parse the JSON response
+            data = response.get_json()
+            self.assertIn('image_url', data)
+            self.assertTrue(data['image_url'].startswith('output/'))
 
 if __name__ == '__main__':
     unittest.main()

@@ -2,6 +2,7 @@ from flask import Flask,send_file, render_template, request, Flask, send_from_di
 from PIL import Image
 import os
 from workflow_api import style_workflow_api, upscale_workflow_api
+from utils import image_utils
 #from workflow_api import upscale_workflow_api
 import logging
 from PIL import ImageEnhance, Image
@@ -11,9 +12,8 @@ import datetime
 
 
 # Define the paths for the input and output images
-ADJUSTED_IMAGE_PATH = 'static/output/adjusted_image.png'
-DOWNLOAD_IMAGE_PATH = 'static/output/download_image.png'
-UPSCALED_IMAGE_PATH = 'static/output/'
+parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+UPSCALED_IMAGE_PATH = os.path.join(parent_dir,'comfy-web-server/static/output/')
 
 
 # Setup basic configuration for logging
@@ -70,90 +70,89 @@ def process():
 
     # Save the image to the input image path
     #image.save(os.path.abspath(INPUT_IMAGE_PATH))
+    try:
+        logging.info("Processing the image...")
+        
+        image_name = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
 
-    logging.info("Processing the image...")
+        # Process the image and save the processed image
+        processed_image_result_path  = style_workflow_api.process_image_with_comfy(
+            input_image_path, processed_image_path, image_name, background_color
+        )
+        
+        logging.info("Image processed...")
+
+        # Return a JSON response with the Base64-encoded image
+        return send_file(processed_image_result_path , mimetype='image/png')
+    finally:
+        os.remove(input_image_path)
+        os.remove(processed_image_path) 
+
+# upscale image endpoint -> upscale the image, crop it using user defined values, and return the upscaled image
+@app.route('/upscale', methods=['POST'])
+def upscale():
+    """Upscale Image Endpoint:
+    1. Upscale the image
+    3. Adjust brightness and contrast
+    4. Resize the image based on the selected format
+    5. Return the upscaled image url"""
     
-    image_name = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    logging.info("Upscale endpoint reached...")
 
-    # Process the image and save the processed image
-    processed_image_result_path  = style_workflow_api.process_image_with_comfy(
-        input_image_path, processed_image_path, image_name, background_color
-    )
+    # Define a list of form fields
+    form_fields = ['brightness', 'contrast', 'format', 'crop_width', 'crop_height', 'crop_x', 'crop_y']
+    # Use a dictionary comprehension to get the form data
+    form_data = {field: request.form[field] for field in form_fields}
+
+    # check for image
+    file = request.files['image']
+    if file.filename == '':
+        return "No image selected", 400
+
+    logging.info("image received")
     
-    logging.info("Image processed...")
-
-    # Return a JSON response with the Base64-encoded image
-    return send_file(processed_image_result_path , mimetype='image/png')
-
-# # upscale image endpoint -> upscale the image, crop it using user defined values, and return the upscaled image
-# @app.route('/upscale', methods=['POST'])
-# def upscale():
-#     """Upscale Image Endpoint:
-#     1. Upscale the image
-#     3. Adjust brightness and contrast
-#     4. Resize the image based on the selected format
-#     5. Return the upscaled image url"""
+    # Open the received image file
+    input_image = Image.open(file.stream)
     
-#     logging.info("Upscale endpoint reached...")
+    # Apply cropping
+    crop_x, crop_y = int(form_data['crop_x']), int(form_data['crop_y'])
+    crop_width, crop_height = int(form_data['crop_width']), int(form_data['crop_height'])
+    cropped_img = image_utils.crop_image(input_image, crop_x, crop_y, crop_width, crop_height)
 
-#     # Define a list of form fields
-#     form_fields = [
-#         'brightness', 'contrast'
-#     ]
-#     # Use a dictionary comprehension to get the form data
-#     form_data = {field: request.form[field] for field in form_fields}
+    # Adjust image brightness and contrast based on form_data
+    brightness = float(form_data['brightness'])
+    contrast = float(form_data['contrast'])
+    adjusted_image = image_utils.adjust_brightness(cropped_img, brightness)
+    adjusted_image = image_utils.adjust_contrast(adjusted_image, contrast)
 
+    # Create a temporary file for the adjusted image
+    with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as temp_adjusted_file:
+        adjusted_image.save(temp_adjusted_file.name)
+        adjusted_image_path = temp_adjusted_file.name
+
+    # Create a temporary file for the upscaled image
+    with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as temp_upscaled_file:
+        upscaled_image_path = temp_upscaled_file.name
+
+    try:
+        image_name = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+        # upscale the image using process_image_with_comfy
+        logging.info("Upscaling the image...")
+
+        upscaled_image_result_path = upscale_workflow_api.process_image_with_comfy(
+            adjusted_image_path, os.path.abspath(UPSCALED_IMAGE_PATH), image_name, 3300
+        )
+        logging.info("Upscaling image complete!")
+
+        # Construct the URL for the upscaled image
+        image_url = f"output/{os.path.basename(upscaled_image_result_path)}"
+        
+        # Return a JSON response with the image URL
+        return jsonify({"image_url": image_url})
     
-#     # Iterate over the keys and log their values from the request form
-#     for key in form_fields:
-#         logging.info("%s value: %s", key, request.form[key])
-
-#     logging.info("FormData processed")
-
-#     # check for image
-#     file = request.files['image']
-#     if file.filename == '':
-#         return "No image selected", 400
-
-#     logging.info("image received")
-    
-#     # Open the received image file
-#     input_image = Image.open(file.stream)
-
-#     # Adjust image brightness and contrast based on form_data
-#     adjusted_image = adjust_image(input_image, float(form_data['brightness']), float(form_data['contrast']))
-#     adjusted_image.save(ADJUSTED_IMAGE_PATH)
-
-#     # upscale the image
-#     logging.info("Upscaling the image...")
-#     upscaled_image = upscale_workflow_api.upscale_image_with_comfy(os.path.abspath(
-#         ADJUSTED_IMAGE_PATH), os.path.abspath(UPSCALED_IMAGE_PATH))
-#     logging.info("Upscaling image complete!")
-
-#     logging.info("upscaled Image: %s", upscaled_image)
-#     logging.info("Type of upscaled_image: %s", type(upscaled_image))
-
-#     # # Open the image to resize it
-#     # upscaled_image = Image.open(upscaled_image)
-
-#     # # Save the resized image to the download image path
-#     # upscaled_image.save(os.path.abspath(DOWNLOAD_IMAGE_PATH))
-#     # logging.info("download Image AFTER RESIZE: %s", DOWNLOAD_IMAGE_PATH)
-#     # logging.info("download Image AFTER RESIZE: %s", DOWNLOAD_IMAGE_PATH.split(f'static{PATH_SEPARATOR}')[1])
-
-#     # Return a JSON response with the download image path
-#     #return jsonify({"image_url": upscaled_image})
-#     return jsonify({"image_url": upscaled_image.split(f'static{PATH_SEPARATOR}')[1]})
-
-def adjust_image(image, brightness, contrast):
-    """Adjust image brightness and contrast."""
-    enhancer = ImageEnhance.Brightness(image)
-    image = enhancer.enhance(brightness / 200.0)
-
-    enhancer = ImageEnhance.Contrast(image)
-    image = enhancer.enhance(contrast / 200.0)
-
-    return image
+    finally:
+        os.remove(adjusted_image_path)
+        os.remove(upscaled_image_path)
 
 # If debug set to True the image processing will hang up before the image is processed
 # host must be set to '0.0.0.0' when hosting on a runpod server/dockerized container

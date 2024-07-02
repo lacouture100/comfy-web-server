@@ -56,7 +56,7 @@ def process_prompt(workflow_api_json: str,
     input_image_node["inputs"]["image"] = input_image_path
     output_image_node["inputs"]["output_path"] = output_image_path
     output_image_node["inputs"]["filename_prefix"] = output_image_name
-    resize_image_node["inputs"]["number"] = 3500
+    resize_image_node["inputs"]["number"] = largest_side_length
 
     # Convert the modified JSON object (dictionary) to a JSON-formatted string
     json_string = json.dumps(data, indent=2)
@@ -82,7 +82,6 @@ def queue_prompt(prompt) :
     data = json.dumps(p).encode('utf-8')
     req =  urllib.request.Request("http://{}/prompt".format(server_address), data=data)
     response = urllib.request.urlopen(req).read()
-    print(response)
     return json.loads(response)
 
 def get_image(filename, subfolder, folder_type) :
@@ -98,10 +97,8 @@ def get_image(filename, subfolder, folder_type) :
         str: The URL of the image.
     """
     data = {"filename": filename, "subfolder": subfolder, "type": folder_type}
-    print(data)
     url_values = urllib.parse.urlencode(data)
     image_url = "{}\\{}".format(output_image_path, filename)
-    print(image_url)
     return image_url
 
 def get_history(prompt_id):
@@ -227,9 +224,7 @@ def process_image_with_comfy(input_image_path: str,
     prompt = json.loads(prompt_text)
     image_data = get_images(ws, prompt)
     
-    
     processed_image_path = image_data[list(image_data.keys())[0]][0]
-    print("upscale_workflow_web_socket : " + processed_image_path)
     ws.close()
     return processed_image_path
 

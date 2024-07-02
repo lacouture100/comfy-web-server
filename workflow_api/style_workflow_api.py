@@ -89,7 +89,6 @@ def queue_prompt(prompt) :
     data = json.dumps(p).encode('utf-8')
     req =  urllib.request.Request("http://{}/prompt".format(server_address), data=data)
     response = urllib.request.urlopen(req).read()
-    print(response)
     return json.loads(response)
 
 def get_image(filename, subfolder, folder_type) :
@@ -105,10 +104,8 @@ def get_image(filename, subfolder, folder_type) :
         str: The URL of the image.
     """
     data = {"filename": filename, "subfolder": subfolder, "type": folder_type}
-    print(data)
     url_values = urllib.parse.urlencode(data)
     image_url = "{}\\{}".format(output_image_path, filename)
-    print(image_url)
     return image_url
 
 def get_history(prompt_id):
@@ -235,7 +232,6 @@ def process_image_with_comfy(input_image_path: str, output_directory: str, outpu
     
     
     processed_image_path = image_data[list(image_data.keys())[0]][0]
-    print("style_workflow_web_socket : " + processed_image_path)
     ws.close()
     return processed_image_path
 
