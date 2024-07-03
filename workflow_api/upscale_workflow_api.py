@@ -9,16 +9,15 @@ import websocket
 import urllib
 import base64
 from flask import send_file
+from .config import server_address, output_image_path, upscale_workflow_api_json, background_image_path
 
 
 # Get the absolute path of the parent directory
 parent_dir = os.path.dirname(os.getcwd())
 
-seed = random.randint(1, 184409551614)
-workflow_api_json = "{}{}".format(os.path.abspath(os.path.dirname(__file__)), "/upscale_workflow_api.json")
-output_image_path = os.path.join(parent_dir, "static", "output")
+workflow_api_json = os.path.join(os.path.abspath(os.path.dirname(__file__)), upscale_workflow_api_json)
+output_image_path = os.path.join(parent_dir, output_image_path)
 
-server_address = "127.0.0.1:8188"
 client_id = str(uuid.uuid4())
 
 def process_prompt(workflow_api_json: str, 
@@ -227,7 +226,3 @@ def process_image_with_comfy(input_image_path: str,
     processed_image_path = image_data[list(image_data.keys())[0]][0]
     ws.close()
     return processed_image_path
-
-
-#process_image_with_comfy(input_image_path, output_image_path, "blue")
-

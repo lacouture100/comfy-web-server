@@ -9,18 +9,18 @@ import websocket
 import urllib
 import base64
 from flask import send_file
-
+from .config import server_address, output_image_path, style_workflow_api_json, background_image_path
 
 # Get the absolute path of the parent directory
 parent_dir = os.path.dirname(os.getcwd())
 
-seed = random.randint(1, 184409551614)
-workflow_api_json = "{}{}".format(os.path.abspath(os.path.dirname(__file__)), "/style_workflow_api.json")
-output_image_path = os.path.join(parent_dir, "static", "output")
-bg_images_path = os.path.join(parent_dir, "static", "bg_colors")
+workflow_api_json = os.path.join(os.path.abspath(os.path.dirname(__file__)), style_workflow_api_json)
+output_image_path = os.path.join(parent_dir, output_image_path)
+bg_images_path = os.path.join(parent_dir, background_image_path)
+print("bg_images_path" + bg_images_path)
 
-server_address = "127.0.0.1:8188"
 client_id = str(uuid.uuid4())
+seed = random.randint(1, 184409551614)
 
 def process_prompt(
         workflow_api_json: str, 
@@ -45,6 +45,8 @@ def process_prompt(
         data = json.load(file)  # data is now a Python dictionary
 
     # Change the seed in each generation for the server to process a new prompt
+    
+
     for key, value in data.items():
         if "inputs" in value:
             if "_meta" in value and value["_meta"].get("title") == "KSampler":
@@ -110,10 +112,10 @@ def get_image(filename, subfolder, folder_type) :
 
 def get_history(prompt_id):
     """
-    Retrieve the history of a prompt from the server.
+    Retrieve the history of a prompt from comfyUI's node outputs.
     
     Args:
-        prompt_id: The unique identifier of the prompt.
+        prompt_id: The unique identifier of the prompt retrieved from the history.
     
     Returns:  
         dict: A dictionary containing every the execution of the prompt
@@ -204,7 +206,6 @@ def print_progress(value, max_value):
 # create new websocket object
 ws = websocket.WebSocket()  
 
-
 def process_image_with_comfy(input_image_path: str, output_directory: str, output_image_name:str, bg_color: str ) -> str:
     """
     Process the input image using the Comfy style workflow API.
@@ -230,11 +231,7 @@ def process_image_with_comfy(input_image_path: str, output_directory: str, outpu
     prompt = json.loads(prompt_text)
     image_data = get_images(ws, prompt)
     
-    
     processed_image_path = image_data[list(image_data.keys())[0]][0]
     ws.close()
     return processed_image_path
-
-
-#process_image_with_comfy(input_image_path, output_image_path, "blue")
 

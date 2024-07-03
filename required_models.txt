@@ -1,1 +1,3 @@
-Oil Painting model based on Stable Diffusion 1.5: https://civitai.com/models/20184/oil-painting
+1. Download the "Oil Painting" model based on Stable Diffusion 1.5: https://civitai.com/models/20184/oil-painting and drop it into the `ComfyUI/ComfyUI/models/ckpt/` directory.
+
+2. Download the "4xUltrasharp_4xUltrasharpV10.pth" model from this URL: https://huggingface.co/amandaic1805/MoondropCollection/blob/9ee1266f7ae18ba04ca90052c5ff3d57995d431f/4xUltrasharp_4xUltrasharpV10.pth and drop it into the `ComfyUI/ComfyUI/models/upscale_models/` directory.
