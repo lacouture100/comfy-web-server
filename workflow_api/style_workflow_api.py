@@ -17,7 +17,10 @@ parent_dir = os.path.dirname(os.getcwd())
 workflow_api_json = os.path.join(os.path.abspath(os.path.dirname(__file__)), style_workflow_api_json)
 output_image_path = os.path.join(parent_dir, output_image_path)
 bg_images_path = os.path.join(parent_dir, background_image_path)
-print("bg_images_path" + bg_images_path)
+
+# use this path for local testing
+#bg_images_path = os.path.join(parent_dir, "static", "bg_colors")
+
 
 client_id = str(uuid.uuid4())
 seed = random.randint(1, 184409551614)
@@ -72,7 +75,7 @@ def process_prompt(
     prompt_text = json_string
     return prompt_text
 
-def queue_prompt(prompt) :
+def queue_prompt(prompt) -> dict:
     """
     Send a prompt to the server to be processed.
     
@@ -93,7 +96,7 @@ def queue_prompt(prompt) :
     response = urllib.request.urlopen(req).read()
     return json.loads(response)
 
-def get_image(filename, subfolder, folder_type) :
+def get_image(filename, subfolder, folder_type) -> str:
     """
     Retrieve an image from the server.
     
@@ -110,7 +113,7 @@ def get_image(filename, subfolder, folder_type) :
     image_url = "{}\\{}".format(output_image_path, filename)
     return image_url
 
-def get_history(prompt_id):
+def get_history(prompt_id) -> dict:
     """
     Retrieve the history of a prompt from comfyUI's node outputs.
     
@@ -124,7 +127,7 @@ def get_history(prompt_id):
     with urllib.request.urlopen("http://{}/history/{}".format(server_address, prompt_id)) as response:
         return json.loads(response.read())
 
-def get_images(websocket, prompt):
+def get_images(websocket, prompt) -> dict:
     """
     This function sends the prompt to the server and waits for the execution to complete.
     It then retrieves the output images from the server and returns them as a dictionary.
@@ -183,7 +186,7 @@ def get_images(websocket, prompt):
     # If there is only one prompt request for one image, return the image data directly.
     return output_images
 
-def print_progress(value, max_value):
+def print_progress(value, max_value) -> None:
     """
     Renders a progress bar in the console.
     

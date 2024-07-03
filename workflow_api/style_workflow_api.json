@@ -1,14 +1,14 @@
 {
   "3": {
     "inputs": {
-      "seed": 702187316329628,
+      "seed": 861049771625675,
       "steps": 20,
       "cfg": 8,
       "sampler_name": "euler",
       "scheduler": "simple",
       "denoise": 0.18,
       "model": [
-        "17",
+        "4",
         0
       ],
       "positive": [
@@ -42,7 +42,7 @@
     "inputs": {
       "text": "impressionist oil painting",
       "clip": [
-        "17",
+        "4",
         1
       ]
     },
@@ -55,7 +55,7 @@
     "inputs": {
       "text": "text, watermark, signatures",
       "clip": [
-        "17",
+        "4",
         1
       ]
     },
@@ -82,7 +82,7 @@
   },
   "10": {
     "inputs": {
-      "image": "image (3).png",
+      "image": "image (3) (1).png",
       "upload": "image"
     },
     "class_type": "LoadImage",
@@ -104,25 +104,6 @@
     "class_type": "VAEEncode",
     "_meta": {
       "title": "VAE Encode"
-    }
-  },
-  "17": {
-    "inputs": {
-      "lora_name": "oil_painting.safetensors",
-      "strength_model": 0.1,
-      "strength_clip": 1,
-      "model": [
-        "4",
-        0
-      ],
-      "clip": [
-        "4",
-        1
-      ]
-    },
-    "class_type": "LoraLoader",
-    "_meta": {
-      "title": "Load LoRA"
     }
   },
   "36": {
@@ -218,12 +199,12 @@
   },
   "59": {
     "inputs": {
-      "image": "bg_blue.png",
+      "image": "blue.png",
       "upload": "image"
     },
     "class_type": "LoadImage",
     "_meta": {
-      "title": "Load Background Image"
+      "title": "Load Image"
     }
   },
   "60": {
@@ -238,19 +219,6 @@
       "title": "🔧 Get Image Size"
     }
   },
-  "63": {
-    "inputs": {
-      "max_width": 1024,
-      "max_height": 1024,
-      "min_width": 0,
-      "min_height": 0,
-      "crop_if_required": "no"
-    },
-    "class_type": "ConstrainImage|pysssss",
-    "_meta": {
-      "title": "Constrain Image 🐍"
-    }
-  },
   "65": {
     "inputs": {
       "width": [
@@ -262,9 +230,9 @@
         1
       ],
       "interpolation": "nearest",
-      "keep_proportion": false,
+      "keep_proportion": true,
       "condition": "always",
-      "multiple_of": 0,
+      "multiple_of": 4,
       "image": [
         "59",
         0
